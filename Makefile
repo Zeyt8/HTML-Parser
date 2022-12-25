@@ -1,3 +1,4 @@
+# Foca Bogdan 336CC
 EXPENDABLES = exec lex.yy.o lex.yy.cc
 CC = g++  
 
