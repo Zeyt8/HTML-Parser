@@ -1,10 +1,14 @@
-build: main
+EXPENDABLES = exec lex.yy.o lex.yy.cc
+CC = g++  
 
-main: lex.yy.c
-	gcc -o exec lex.yy.c -lfl
+build: lex.yy.o
+	$(CC) -o exec lex.yy.o -lfl
 
-lex.yy.c: main.l
-	flex main.l
+lex.yy.o: lex.yy.cc
+	$(CC) -c -x c++ lex.yy.cc -lfl
 
-clean: 
-	rm lex.yy.c exec
+lex.yy.cc: main.l
+	flex --c++ main.l
+
+clean:
+	rm -f $(EXPENDABLES)
