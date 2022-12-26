@@ -19,21 +19,20 @@ class Tag
         Tag(std::string name)
         {
             this->name = name;
-            this->name[name.size() - 1] = '>';
         }
         std::string name;
         std::vector<Tag> subtags;
-        std::string toString(bool withName = true)
+        std::string toString(bool withName = true, std::string separator = ":")
         {
             std::string result = "";
             if (withName)
             {
-                result += name;
+                result += "<" + name + ">";
                 if (subtags.size() == 0)
                 {
                     return result;
                 }
-                result += "->";
+                result += separator;
             }
             result += "[";
             for (int i = 0; i < subtags.size(); i++)
