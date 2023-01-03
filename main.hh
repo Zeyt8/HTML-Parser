@@ -13,37 +13,59 @@ class HTMLParser : public yyFlexLexer
         virtual int yylex();
 };
 
+class StyleTag
+{
+    public:
+        StyleTag(const std::string& name)
+        {
+            this->name = name;
+        }
+        std::string name;
+};
+
 class Tag
 {
     public:
-        Tag(std::string name)
+        Tag(const std::string& name)
         {
             this->name = name;
         }
         std::string name;
         std::vector<Tag> subtags;
-        std::string toString(bool withName = true, std::string separator = ":")
+        std::vector<StyleTag> styletags;
+        std::string toString(bool withName = true, const std::string& separator = ":", bool withStyle = false)
         {
             std::string result = "";
             if (withName)
             {
                 result += "<" + name + ">";
-                if (subtags.size() == 0)
-                {
-                    return result;
-                }
-                result += separator;
             }
-            result += "[";
-            for (int i = 0; i < subtags.size(); i++)
+            if (withStyle && styletags.size() != 0)
             {
-                result += subtags[i].toString();
-                if (i != subtags.size() - 1)
+                result += separator + "[";
+                for (int i = 0; i < styletags.size(); i++)
                 {
-                    result += ",";
+                    result += styletags[i].name;
+                    if (i != styletags.size() - 1)
+                    {
+                        result += ",";
+                    }
                 }
+                result += "]";
             }
-            result += "]";
+            if (subtags.size() != 0)
+            {
+                result += separator + "[";
+                for (int i = 0; i < subtags.size(); i++)
+                {
+                    result += subtags[i].toString();
+                    if (i != subtags.size() - 1)
+                    {
+                        result += ",";
+                    }
+                }
+                result += "]";
+            }
             return result;
         }
 };
