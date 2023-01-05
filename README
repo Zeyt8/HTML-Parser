@@ -1,3 +1,48 @@
 <!-- Foca Bogdan 336CC -->
 # HTML-Parser
-Using FLEX to get information from an HTML file
+
+Am create 2 clase.
+
+Tag care reprezinta un tag html. Acest tag contine un nume, un vector de taguri copil si un vector de taguri de style. De asemenea, contine o functie toString pentru a afisa tagul in diferitele moduri necesare.
+
+Clasa StyleTag contine doar un nume.
+
+Tagurile de <br> si <b> sunt total ignorate.
+
+## Tagguri body
+
+Cand dau de <body> intru in starea IN_BODY. Cand gasesc un tag de <div> voi intra in starea IN_DIV si da push, pentru orice alt tag intru in starea IN_TAG si dau push. Imi dau seama daca am gasit un tag verificand forma <tag urmata ori de > sau spatiu. Starea IN_TAG este folosita pentru a lua doar tagurile de primul nivel din body. Tot ce se intampla in starea IN_TAG este ca ii dau pop atunci cand se gaseste tagul de inchidere(adica o secventa de forma </tag>).
+
+Adaug tagul la lista de subtaguri din tagul body. Daca tagul este de tip div il adaug la lista de taguri div.
+
+Tagurile de tip image si input nu intra intr-o stare de IN_TAG, deoarece nu pot contine subtaguri.
+
+Daca dupa numele tagului se afla spatiu si nu >, atunci dupa ce intru in starea IN_DIV sau IN_TAG, dau push si la starea IN_INLINE_STYLE detaliata mai jos.
+
+## Tagguri div
+
+Am detaliat mai sus cand se intra in starea DIV.
+
+Procesarea tagurilor gasite se face fix ca mai sus, dar fara a adauga tagurile la lista din celor din body, ci ca subtaguri a ultimului tag div adaugat.
+
+## Taguri style
+
+Cand dau de secventa <head> urmata de spatii sau newlines si dupa <style> intru in starea IN_STYLE.
+
+In aceasta stare pentru a depista un tag de style ma uit dupa o secventa de caractere care sa fie urmata de spatiu si {. Adaug tagul la style_head_tags.
+
+Ma uit dupa secvente de forma caractere urmata de : si alte caractere si ; la final. Cand o gasesc, adaug un StyleTag la ultimul tag din style_head_tags.
+
+Ies din stare cand dau de secventa </style>spatii sau newlines</head>
+
+### Inline style
+
+Cand gasesc un tag de div sau body, daca dupa numele tagului se afla spatiu si nu >, atunci dupa ce intru in starea IN_DIV sau IN_TAG, dau push si la starea IN_INLINE_STYLE. Adaug tagul la style_head_tags.
+
+Aici ma uit dupa o secventa de caractere urmata de ="alteCaractere". Adaug tagul la lista de taguri de style a ultimului tag din style_head_tags.
+
+Cand dau de > dau pop la stare.
+
+## Main
+
+Printez listele de taguri conform cerintelor.
