@@ -1,10 +1,14 @@
 // Foca Bogdan 336CC
+
+// required workaround for flex c++
+// copied directly from flex documentation
 #if !defined(yyFlexLexerOnce)
 #include <FlexLexer.h>
 #endif
 
 #include <vector>
 
+// Class required for flex to work with c++
 class HTMLParser : public yyFlexLexer
 {
     public:
@@ -43,7 +47,7 @@ class Tag
             if (withStyle && styletags.size() != 0)
             {
                 result += separator + "[";
-                for (int i = 0; i < styletags.size(); i++)
+                for (uint32_t i = 0; i < styletags.size(); i++)
                 {
                     result += styletags[i].name;
                     if (i != styletags.size() - 1)
@@ -56,7 +60,7 @@ class Tag
             if (subtags.size() != 0)
             {
                 result += separator + "[";
-                for (int i = 0; i < subtags.size(); i++)
+                for (uint32_t i = 0; i < subtags.size(); i++)
                 {
                     result += subtags[i].toString();
                     if (i != subtags.size() - 1)
