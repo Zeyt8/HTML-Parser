@@ -11,9 +11,11 @@ Tagurile de <br> si <b> sunt total ignorate.
 
 ## Tagguri body
 
-Cand dau de <body> intru in starea IN_BODY. Cand gasesc un tag de <div> voi intra in starea IN_DIV si da push, pentru orice alt tag intru in starea IN_TAG si dau push. Imi dau seama daca am gasit un tag verificand forma <tag urmata ori de > sau spatiu. Starea IN_TAG este folosita pentru a lua doar tagurile de primul nivel din body. Tot ce se intampla in starea IN_TAG este ca ii dau pop atunci cand se gaseste tagul de inchidere(adica o secventa de forma </tag>).
+Cand dau de <body> intru in starea IN_BODY. Cand gasesc un tag de <div> voi intra in starea IN_DIV si da push, pentru orice alt tag intru in starea IN_TAG si dau push. Imi dau seama daca am gasit un tag verificand forma <tag urmata ori de > sau spatiu.
 
-Adaug tagul la lista de subtaguri din tagul body. Daca tagul este de tip div il adaug la lista de taguri div.
+Cand se gaseste tagul de inchidere(adica o secventa de forma </tag>) dau pop la stare.
+
+Adaug tagul la lista de subtaguri din tagul body. Daca tagul este de tip div il adaug la lista de taguri div si updatez last_div ca fiind ultimul index din lista de divuri.
 
 Tagurile de tip image si input nu intra intr-o stare de IN_TAG, deoarece nu pot contine subtaguri.
 
@@ -23,7 +25,9 @@ Daca dupa numele tagului se afla spatiu si nu >, atunci dupa ce intru in starea 
 
 Am detaliat mai sus cand se intra in starea DIV.
 
-Procesarea tagurilor gasite se face fix ca mai sus, dar fara a adauga tagurile la lista din celor din body, ci ca subtaguri a ultimului tag div adaugat.
+Exista o exceptie. Daca gasesc un tag de inchidere </div> si sunt in starea IN_DIV, pe langa pop, voi scadea last_div cu 1. Acest lucru imi permite sa adaug subtaguri la divul potrivit in caz in care am div in div.
+
+Procesarea tagurilor gasite se face fix ca mai sus, dar fara a adauga tagurile la lista din celor din body, ci ca subtaguri al tagului div de la pozitia last_div.
 
 ## Taguri style
 
@@ -42,6 +46,12 @@ Cand gasesc un tag de div sau body, daca dupa numele tagului se afla spatiu si n
 Aici ma uit dupa o secventa de caractere urmata de ="alteCaractere". Adaug tagul la lista de taguri de style a ultimului tag din style_head_tags.
 
 Cand dau de > dau pop la stare.
+
+## In tag
+
+Starea IN_TAG este folosita pentru a lua doar tagurile de primul nivel din body.
+
+In starea IN_TAG verific similar cu IN_BODY, doar ca doar pentru div sau pentru taguri cu inline style, celelalte neaducand nicio schimbare asupra listelor.
 
 ## Main
 

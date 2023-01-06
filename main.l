@@ -8,29 +8,32 @@
     Tag body("body");
     std::vector<Tag> div_tags;
     std::vector<Tag> style_head_tags;
+
+    int last_div = -1;
 %}
 
 %option c++
 %option noyywrap
 %option yyclass="HTMLParser"
 %option batch
+%option caseless
 
 %s IN_BODY IN_DIV IN_STYLE IN_INLINE_STYLE IN_TAG
 
 %%
 
     /* begin body section */
-<INITIAL>"<body>" {
-    BEGIN(IN_BODY);
+"<body>" {
+    yy_push_state(IN_BODY);
 }
 
     /* begin head style section */
-<INITIAL>"<head>"(.|\n)*"<style>" {
+"<style>" {
     BEGIN(IN_STYLE);
 }
 
     /* ignore bold sections and break lines */
-"<b>"|"</b>"|"<br>" {}
+"<b>"|"</b>"|"<br>"|"<hr>"|"<i>"|"</i>" {}
 
     /*
     IN INLINE STYLE STATES REGION
@@ -51,7 +54,7 @@
     */
 
     /* end head style section */
-<IN_STYLE>"</style>"(.|\n)*"</head>" {
+<IN_STYLE>"</style>" {
     BEGIN(INITIAL);
 }
 
@@ -68,13 +71,23 @@
 }
 
     /*
-    IN BODY STATES REGION
+    END TAG REGION
     */
 
-    /* end body section */
-<IN_BODY>"</body>" {
-    BEGIN(INITIAL);
+    /* match with end div while in a div */
+<IN_DIV>"</div>" {
+    yy_pop_state();
+    last_div--;
 }
+
+    /* end tag */
+<IN_BODY,IN_DIV,IN_TAG>"</"[^>]*">" {
+    yy_pop_state();
+}
+
+    /*
+    IN BODY STATES REGION
+    */
 
     /* found div begin in body section */
 <IN_BODY>"<div"/">" {
@@ -83,6 +96,7 @@
 
     body.subtags.push_back(tag);
     div_tags.push_back(tag);
+    last_div = div_tags.size() - 1;
 
     yy_push_state(IN_DIV);
 }
@@ -94,6 +108,7 @@
 
     body.subtags.push_back(tag);
     div_tags.push_back(tag);
+    last_div = div_tags.size() - 1;
     style_head_tags.push_back(tag);
 
     yy_push_state(IN_DIV);
@@ -135,9 +150,30 @@
     IN DIV STATES REGION
     /*
 
-    /* end tag */
-<IN_BODY,IN_DIV,IN_TAG>"</"[^>]*">" {
-    yy_pop_state();
+    /* found div begin in another div */
+<IN_DIV>"<div"/">" {
+    std::string text(yytext + 1, yytext + strlen(yytext));
+    Tag tag(text + std::to_string(div_tags.size() + 1));
+
+    div_tags[last_div].subtags.push_back(tag);
+    div_tags.push_back(tag);
+    last_div = div_tags.size() - 1;
+
+    yy_push_state(IN_DIV);
+}
+
+    /* found div with inline style in another div */
+<IN_DIV>"<div"/" " {
+    std::string text(yytext + 1, yytext + strlen(yytext));
+    Tag tag(text + std::to_string(div_tags.size() + 1));
+
+    div_tags[last_div].subtags.push_back(tag);
+    div_tags.push_back(tag);
+    last_div = div_tags.size() - 1;
+    style_head_tags.push_back(tag);
+
+    yy_push_state(IN_DIV);
+    yy_push_state(IN_INLINE_STYLE);
 }
 
     /* found img or input in div section with inline style */
@@ -145,7 +181,7 @@
     std::string text(yytext + 1, yytext + strlen(yytext));
     Tag tag(text);
 
-    div_tags[div_tags.size() - 1].subtags.push_back(tag);
+    div_tags[last_div].subtags.push_back(tag);
     style_head_tags.push_back(tag);
 
     yy_push_state(IN_INLINE_STYLE);
@@ -154,7 +190,7 @@
     /* found other tag in div section */
 <IN_DIV>"<"[^/][^ >]*/">" {
     std::string text(yytext + 1, yytext + strlen(yytext));
-    div_tags[div_tags.size() - 1].subtags.push_back(Tag(text));
+    div_tags[last_div].subtags.push_back(Tag(text));
     yy_push_state(IN_TAG);
 }
 
@@ -163,14 +199,63 @@
     std::string text(yytext + 1, yytext + strlen(yytext));
     Tag tag(text);
 
-    div_tags[div_tags.size() - 1].subtags.push_back(tag);
+    div_tags[last_div].subtags.push_back(tag);
     style_head_tags.push_back(tag);
 
     yy_push_state(IN_TAG);
     yy_push_state(IN_INLINE_STYLE);
 }
 
-<IN_BODY,INITIAL,IN_DIV,IN_STYLE,IN_INLINE_STYLE,IN_TAG>.|\n {}
+    /*
+    IN TAG REGION
+    */
+
+    /* match div inside antoher tag */
+<IN_TAG>"<div"/">" {
+    std::string text(yytext + 1, yytext + strlen(yytext));
+    Tag tag(text + std::to_string(div_tags.size() + 1));
+
+    div_tags.push_back(tag);
+    last_div = div_tags.size() - 1;
+
+    yy_push_state(IN_DIV);
+}
+
+    /* match div with inline style inside another tag */
+<IN_TAG>"<div"/" " {
+    std::string text(yytext + 1, yytext + strlen(yytext));
+    Tag tag(text + std::to_string(div_tags.size() + 1));
+
+    div_tags.push_back(tag);
+    last_div = div_tags.size() - 1;
+    style_head_tags.push_back(tag);
+
+    yy_push_state(IN_DIV);
+    yy_push_state(IN_INLINE_STYLE);
+}
+
+    /* match img or input in antoher tag */
+<IN_TAG>"<"(img|input)/" " {
+    std::string text(yytext + 1, yytext + strlen(yytext));
+    Tag tag(text);
+
+    style_head_tags.push_back(tag);
+
+    yy_push_state(IN_INLINE_STYLE);
+}
+
+    /* match another tag with inline style inside another tag */
+<IN_TAG>"<"[^/][^ >]*/" " {
+    std::string text(yytext + 1, yytext + strlen(yytext));
+    Tag tag(text);
+
+    style_head_tags.push_back(tag);
+
+    yy_push_state(IN_TAG);
+    yy_push_state(IN_INLINE_STYLE);
+}
+
+.|\n {}
 
 %%
 
