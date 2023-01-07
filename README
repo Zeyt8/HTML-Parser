@@ -1,11 +1,11 @@
 <!-- Foca Bogdan 336CC -->
 # HTML-Parser
 
+Am ales sa fac tema folosind FLEX in C++.
+
 Am create 2 clase.
 
-Tag care reprezinta un tag html. Acest tag contine un nume, un vector de taguri copil si un vector de taguri de style. De asemenea, contine o functie toString pentru a afisa tagul in diferitele moduri necesare.
-
-Clasa StyleTag contine doar un nume.
+Tag care reprezinta un tag html. Acest tag contine un nume, un vector de taguri copil si un vector de taguri de style. De asemenea, contine o functie toString pentru a afisa tagul in diferitele moduri necesare. Clasa StyleTag contine doar un nume.
 
 Tagurile de <br> si <b> sunt total ignorate.
 
