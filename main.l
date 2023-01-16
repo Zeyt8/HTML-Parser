@@ -10,6 +10,7 @@
     std::vector<Tag> style_head_tags;
 
     int last_div = -1;
+    int offset = 0;
 %}
 
 %option c++
@@ -77,7 +78,7 @@
     /* match with end div while in a div */
 <IN_DIV>"</div>" {
     yy_pop_state();
-    last_div--;
+    last_div -= offset;
 }
 
     /* end tag */
@@ -96,6 +97,7 @@
 
     body.subtags.push_back(tag);
     div_tags.push_back(tag);
+    offset = div_tags.size() - 1 - last_div;
     last_div = div_tags.size() - 1;
 
     yy_push_state(IN_DIV);
@@ -108,6 +110,7 @@
 
     body.subtags.push_back(tag);
     div_tags.push_back(tag);
+    offset = div_tags.size() - 1 - last_div;
     last_div = div_tags.size() - 1;
     style_head_tags.push_back(tag);
 
@@ -157,6 +160,7 @@
 
     div_tags[last_div].subtags.push_back(tag);
     div_tags.push_back(tag);
+    offset = div_tags.size() - 1 - last_div;
     last_div = div_tags.size() - 1;
 
     yy_push_state(IN_DIV);
@@ -169,6 +173,7 @@
 
     div_tags[last_div].subtags.push_back(tag);
     div_tags.push_back(tag);
+    offset = div_tags.size() - 1 - last_div;
     last_div = div_tags.size() - 1;
     style_head_tags.push_back(tag);
 
@@ -216,6 +221,7 @@
     Tag tag(text + std::to_string(div_tags.size() + 1));
 
     div_tags.push_back(tag);
+    offset = div_tags.size() - 1 - last_div;
     last_div = div_tags.size() - 1;
 
     yy_push_state(IN_DIV);
@@ -227,6 +233,7 @@
     Tag tag(text + std::to_string(div_tags.size() + 1));
 
     div_tags.push_back(tag);
+    offset = div_tags.size() - 1 - last_div;
     last_div = div_tags.size() - 1;
     style_head_tags.push_back(tag);
 
