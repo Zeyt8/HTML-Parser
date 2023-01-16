@@ -35,9 +35,9 @@ class Tag
             this->name = name;
         }
         std::string name;
-        std::vector<Tag> subtags;
+        std::vector<Tag*> subtags;
         std::vector<StyleTag> styletags;
-        std::string toString(bool withName = true, const std::string& separator = ":", bool withStyle = false)
+        std::string toString(bool withName = true, const std::string& separator = ":", bool withStyle = false, int recursive = 1, bool recursiveStyle = false)
         {
             std::string result = "";
             if (withName)
@@ -57,12 +57,12 @@ class Tag
                 }
                 result += "]";
             }
-            if (subtags.size() != 0)
+            if (recursive > 0 && subtags.size() != 0)
             {
                 result += separator + "[";
                 for (uint32_t i = 0; i < subtags.size(); i++)
                 {
-                    result += subtags[i].toString();
+                    result += subtags[i]->toString(true, separator, recursiveStyle, recursive - 1);
                     if (i != subtags.size() - 1)
                     {
                         result += ",";
